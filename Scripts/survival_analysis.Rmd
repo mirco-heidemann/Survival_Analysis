@@ -1,0 +1,213 @@
+---
+title: "Survival Analysis"
+author: Mirco Heidemann
+date: Juni 2019
+output: pdf_document
+---
+
+Die survival analysis prognostiziert, ob ein Ereignis in einem bestimmten Zeitraum eintritt. Statistische Methoden der Analyse beinhalten Kaplan-Meier Kurven, das Erstellen einer survival Funktion mithilfe survival trees oder survival forests und log-rank Tests für "between-group" Vergleiche.
+
+Um den Einfluss einer oder mehrerer Variablen auf die Dauer bis zum Eintreten des Ereignisses ("Überlebenszeit") zu schätzen, werden die Cox-Proportional-Hazards-Modelle verwendet. Mit diesen Modellen können univariable und multivariable Regression mit "Überlebenszeit-Resultate" gefittet werden. 
+
+## Was sind survival Daten?
+Time-to-event Daten mit einem Anfang und einem Ende. Z.B. der Anfang einer Operationsbehandlung bis zum Todeszeitpunkt oder die Zeit zwischen einer Krankheitsbehandlung und dem Einsetzten einer Gesundheitsverbesserung. 
+
+## Welche Fragen sollen beantwortet werden?
+1. Wie hoch ist die Überlebensw'keit zu einem bestimmten Zeitpunkt?
+2. Wie hoch ist die durchschnittliche Überlebensw'keit?
+
+## Was ist Censoring?
+Üblicherweise ist der exakte Zeitpunkt der untersuchten Variable nicht immer bekannt. So ist ein Ereignis (z.B. Rückfall) bis zum Ende des Experimentes nicht beobachtet worden. In Experimenten mit festem Start- und Endpunkt werden demnach alle Beobachtungen am Ende des Experiments zensiert, falls bei diesem Versuchsobjekt das Ereignis noch nicht eingetreten ist. Das heisst alle zensierten Beobachtungen sind gleich der Länge des Experiments (rechts Censoring).
+
+## Kaplan-Meier Schätzer
+Kaplan-Meier Schätzer ist eine nichtparametrische Statistik um die survival Funktion zu schätzen. Eine nicht parametrische Statistik bedeutet, dass keine Annahmen einer zugrunde liegenden W'keitsverteilung gemacht werden und eignet sich gut für rechts-zensierte Daten.
+Die nicht parametrische Statistik gibt die W'keit, dass ein bestimmtes Ereignis innerhalb eines Zeitintervalles **nicht** eintritt. Zum Zeitpunkt t = 0, ist der Kaplan-Meier Schätzer 1 und geht gegen 0 mit vortlaufendem t.
+
+Der Kaplan-Meier Schätzer basiert ferner auf der Annahme, dass die Wahrscheinlichkeit, über einen bestimmten Zeitpunkt t hinaus zu überleben, gleich dem Produkt der beobachteten Überlebensraten bis zum Zeitpunkt t ist.
+Sie S(t) die Überlebenswahrscheinlichkeit zum Zeitpunkt t. Sie wird mit S(t) = p_1 * p_2 * .... * p_t angegeben, wobei p_1 der Anteil aller Variablen ist (z.B. Patienten), die über den ersten Zeitpunkt hinaus überleben, p_2 ist der Anteil der Variablen, die über den zweiten Zeitpunkt hinaus überleben, und so weiter, bis der Zeitpunkt t erreicht ist.
+
+Bei der Berechnung der Anteile für jeden nächsten Zeitpunkt, beginnend mit p_2 bis p_t., werden nur diejenigen Variablen berücksichtigt, die über den vorherigen Zeitpunkt hinaus überlebt haben. Somit sind p_2, p_3,..., p_t Proportionen, die von den vorherigen Proportionen abhängig sind.
+
+In der Praxis werden die Überlebenszeiten zunächst in der Reihenfolge der zunehmenden Dauer organisiert. Dazu gehören auch die zensierten Werte. Anschliessend werden die Anteile wie oben beschrieben berechnen und zu S(t) zusammengefassen. Zensierte Variablen werden nach dem Zeitpunkt der Zensur weggelassen, so dass sie den Anteil der überlebenden Variablen nicht beeinflussen.
+
+Zum Schluss wird der Log-Rank-Test verwendet, um Überlebenskurven von zwei Gruppen zu vergleichen. Der Log-Rank-Test ist ein statistischer Hypothesentest, der die Nullhypothese testet, dass sich die Überlebenskurven von zwei Populationen **nicht** unterscheiden. Aus einer bestimmten Wahrscheinlichkeitsverteilung, einer Chi-Quadrat-Verteilung, kann ein p-Wert abgeleitet werden um die statistische Signifikanz zu quantifizieren. Ein Ergebnis mit p < 0,05 wird in der Regel als signifikant angesehen und deutet darauf hin, dass sich die beiden Behandlungsgruppen in Bezug auf das Überleben signifikant unterscheiden.
+
+## Cox Proportional Hazards Modelle
+Die beschriebenen Methoden - Kaplan-Meier Schätzer und Logrank-Tests - sind Beispiele für univariate Analysen. Sie beschreiben das Überleben anhand eines untersuchten Faktors, ignorieren aber die Auswirkungen weiterer Faktoren.
+
+Darüber hinaus sind Kaplan-Meier-Kurven und Logrank-Tests nur dann sinnvoll, wenn die Prädiktorvariable kategorisch ist (z.B. treatment A vs. treatment B oder Männer vs. Frauen). Sie funktionieren schlecht für quantitative Prädiktoren wie Genexpression, Gewicht oder Alter.
+
+Eine alternative Methode ist die Cox Proportional Hazards Regressionsanalyse, die sowohl für quantitative Prädiktorvariablen als auch für kategorische Variablen funktioniert. Darüber hinaus erweitert das Cox-Regressionsmodell die Methoden der Überlebensanalyse, um gleichzeitig den Einfluss mehrerer Risikofaktoren auf die Überlebenszeit zu beurteilen.
+
+In klinischen Studien gibt es viele Situationen, in denen mehrere bekannte Grössen (sogenannte Kovariablen) die Prognose des Patienten beeinflussen können.
+Angenommen, es werden zwei Gruppen von Patienten verglichen: Patienten mit und Patienten ohne einen bestimmten Genotyp. Wenn eine der Gruppen auch ältere Individuen enthält, kann jeder Unterschied im Überleben auf den Genotyp oder das Alter oder beides zurückzuführen sein. Daher ist es bei der Untersuchung des Überlebens in Bezug auf einen bestimmten Faktor oft wünschenswert, sich an die Auswirkungen anderer anzupassen.
+
+Die Cox Proportional Hazards Regressionsanalyse ermöglicht es, das Überleben in Bezug auf mehrere Faktoren gleichzeitig zu analysieren. Zusätzlich liefert das statistische Modell die Effektgrösse für jeden Faktor.
+
+Der Zweck des Modells ist es, gleichzeitig den Einfluss mehrerer Faktoren auf das Überleben zu bewerten. Mit anderen Worten, es ermöglicht uns zu untersuchen, wie bestimmte Faktoren die Rate eines bestimmten Ereignisses (z.B. Infektion, Tod) zu einem bestimmten Zeitpunkt beeinflussen. Diese Rate wird allgemein als Gefährdungsrate (hazard rate) bezeichnet. Prädiktorvariablen (oder Faktoren) werden in der Literatur der survival analyse meist als Kovariablen bezeichnet.
+
+Das Cox-Modell wird ausgedrückt durch die Gefahrenfunktion h(t). Kurz gesagt, die Gefahrenfunktion kann als das Risiko des Sterbens zum Zeitpunkt t interpretiert werden. Sie kann wie folgt geschätzt werden:
+
+$$h(t) = h_0(t) * exp(b_1 * x_1 + b_2 * x_2 + ... + b_p*x_p)$$
+wobei
+
+- t stellt die Überlebenszeit dar
+- h(t)ist die hazard Funktion, die durch ein Set von p Kovariablen (x1,x2,....,xp) bestimmt wird.
+- die Koeffizienten (b1,b2,....,bp) messen die Auswirkungen (d.h. die Effektgrösse) von Kovariablen.
+- der Begriff h0 wird als Basisgefahr (baseline hazard) bezeichnet. Sie entspricht dem Wert der Gefahr, wenn alle xi gleich Null sind (die Mengenangabe exp(0) ist gleich 1). Das "t" in h(t) erinnert daran, dass die Gefahr im Laufe der Zeit variieren kann.
+
+Das Cox-Modell kann beschrieben werden als multiple lineare Regression des logarithmierten hazards auf die Variablen xi, wobei die baseline hazard ein "intercep" ist, der mit der Zeit variiert.
+
+Die Grössengleichungen exp(bi) werden als Hazard Ratios (HR) bezeichnet. Ein Wert von bi grösser als Null, oder äquivalent ein Hazard Ratio grösser als eins, zeigt an, dass wenn der Wert der i-ten Kovariate steigt, der event hazard steigt und damit die Dauer des Überlebens sinkt.
+
+Anders ausgedrückt, eine Hazard Ratio über 1 zeigt eine Kovariable an, die positiv mit der Ereigniswahrscheinlichkeit und damit negativ mit der Überlebensdauer verbunden ist.
+
+Zusammenfassend:
+
+- HR = 1: Keine Wirkung
+- HR < 1: Reduzierung der Gefährdung
+- HR > 1: Erhöhung der Gefährdung
+
+Eine wichtige Annahme des Cox-Modells ist, dass die hazard Kurven für die Gruppen von Beobachtungen (oder Patienten) proportional sein sollten und sich nicht überschneiden. Mit anderen Worten, wenn eine Person zu einem Anfangszeitpunkt ein doppelt so hohes Todesrisiko hat wie eine andere Person, dann bleibt das Todesrisiko zu allen späteren Zeiten doppelt so hoch.
+
+**Die Annahme von proportionalen hazards sollte wie folgt geprüft werden:**
+Die Annahme der proportionalen hazards kann durch statistische Tests und grafische Diagnostik auf Basis der skalierten Schönfeld-Residuen überprüft werden.
+
+Grundsätzlich sind die Schönfelder Residuen zeitunabhängig. Ein Plot, der ein **nicht-zufälliges** Muster gegen die Zeit zeigt, ist ein Beweis für die Verletzung der Annahme.
+
+Die Funktion *cox.zph()* im R survival package bietet eine praktische Lösung, um die proportionale Gefahrenannahme für jede Kovariable zu testen (cox.zph(<model>)).
+
+Die Funktion cox.zph() korreliert für jede Kovariable den entsprechenden Satz skalierter Schönfeld-Residuen mit der Zeit, um die Unabhängigkeit zwischen Residuen und Zeit zu testen. Zusätzlich führt sie einen globalen Test für das gesamte Modell durch.
+
+Die proportionale Gefährdungsannahme wird durch eine nicht signifikante Beziehung zwischen Residuen und Zeit gestützt und durch eine signifikante Beziehung verworfen.
+
+Eine grafische Diagnose kann mit der Funktion ggcoxzph()des survival package durchgeführt werden. Für jede Kovariable werden dabei Graphen der skalierten Schönfeld-Residuen gegen die transformierte Zeit erzeugt.
+Bei der grafischen Diagnose darf kein Muster mit Zeit sichtbar sein um die Annahme proportionaler hazards zu stützen.
+
+Um zu beurteilen, ob ein angepasstes Cox-Regressionsmodell die Daten angemessen beschreibt, sollten noch zwei weiter Diagnosen durchgeführt werden:
+
+- Erkennung von Nichtlinearität im Verhältnis zwischen der Log-Gefahr und den Kovariablen (Martingale residuals).
+- Untersuchung einflussreicher Beobachtungen (oder Ausreiser) mit den Deviance Residuen (symmetrische Transformation der Martinguale residuals).
+
+# Durchführung einer Survival Analysis in R
+In diesem Tutorial wird der Ovarian (Eierstöcke) Datensatz (Edmunson J.H. et al., 1979) verwenden, der mit dem survival package geliefert wird. Dieser Datensatz umfasst eine Gruppe von Ovarialkrebspatienten und entsprechende klinische Informationen, einschliesslich der Zeit, in der die Patienten getrackt wurden, bis sie entweder starben oder durch Nachsorge verloren gingen (futime), ob die Patienten zensiert wurden oder nicht (fustat), Patientenalter, Behandlungsgruppenzuordnung, Vorhandensein von Resterkrankungen und Performance status. Für eine Variablenbeschreibung siehe auch help(ovarian).
+
+```{r setup, message = FALSE, warning=FALSE, include=FALSE}
+# Define whether to hide code chunks globally (echo = FALSE) or show all (echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(kableExtra)
+library(ggpubr)
+library(survival)
+library(survminer)
+
+## relative pfade
+data_pth = '../Data/'
+```
+
+Import des ovarian Krebs Datensatzes.
+```{r}
+data(ovarian)
+glimpse(ovarian)
+```
+
+Die Spalte futime enthält die Überlebenszeiten. Dies ist die abhängige variable (response oder erklärte Variable). fustat gibt Auskunft darüber, ob die Überlebenszeit eines einzelnen Patienten zensiert wird (1) oder nicht (0). Anscheinend erhielten die 26 Patienten in dieser Studie entweder eines von zwei Therapieschemata - treatment group - (rx) und der behandelnde Arzt bewertete irgendwann die Rückbildung von Tumoren (resid.ds) und die Patienten Performance (nach den standardisierten ECOG-Kriterien; ecog.ps).
+
+Falls das Alter als prädiktive Variable (erklärende Variable) aufgenommen werden soll, mussen die kontinuierliche Variable in eine binäre Werte dichotomisiert werden. Aber welchen Cutoff soll dafür gewählt werden?
+Betrachten wir einmal die Gesamtverteilung der Alterswerte:
+```{r fig.align = 'left'}
+# Dichotomize age and change data labels
+ovarian$rx <- factor(ovarian$rx, 
+                     levels = c("1", "2"), 
+                     labels = c("A", "B"))
+ovarian$resid.ds <- factor(ovarian$resid.ds, 
+                           levels = c("1", "2"), 
+                           labels = c("no", "yes"))
+ovarian$ecog.ps <- factor(ovarian$ecog.ps, 
+                          levels = c("1", "2"), 
+                          labels = c("good", "bad"))
+
+gghistogram(ovarian, x = "age",
+   add = "mean", rug = TRUE,
+   color = "#E7B800", fill = "#E7B800",
+   bins = 10,
+   xlab = "Alter",
+   ylab = "Häufigkeit",
+   title = "Altersverteilung")
+```
+
+Die offensichtlich bimodale Verteilung deutet auf einen Cutoff bei 50 Jahren hin. Mit der Mutationsfunktion kann eine zusätzliche age_group-Spalte hinzugefügt werden, die sich später noch als nützlich erweisen wird. zudem sollten die zukünftigen Kovariablen in Faktoren umgewandelt werden.
+```{r}
+ovarian <- ovarian %>%
+  mutate(age_group = ifelse(age >=50, "old", "young"))
+
+ovarian$age_group <- factor(ovarian$age_group)
+```
+
+Nun sind wir bereit, ein survival Objekt zu erstellen. Das ist im Grunde genommen eine kompilierte Version der futime- und fustat-Spalten, die von der survfit-Funktion interpretiert werden können. Ein "+" hinter den Überlebenszeiten zeigt zensierte Datenpunkte an.
+```{r}
+# Fit survival data using the Kaplan-Meier method
+surv_object <- Surv(time = ovarian$futime, event = ovarian$fustat)
+surv_object 
+```
+
+Der nächste Schritt ist die Anpassung der Kaplan-Meier-Kurven. Das geschieht indem das surv_object an die survfit-Funktion übergeben wird. Wir können die Kurve auch in Abhängigkeit vom Behandlungsregime rx, dem die Patienten zugeordnet wurden, schichten.
+```{r}
+# Fit survival data using the Kaplan-Meier method
+fit1 <- survfit(surv_object ~ rx, data = ovarian)
+summary(fit1)
+```
+Eine summary() des resultierenden fit1-Objekts zeigt unter anderem die Überlebenszeiten (time), den Anteil der überlebenden Patienten zu jedem Zeitpunkt (survival) (p_1, p_2, ...) und die Behandlungsgruppen (rx).
+
+Indem das Überlebensobjekt an die Funktion ggsurvplot übergeben wird, kann die entsprechende Überlebenskurve untersucht werden. Mit dem Argument "pval = TRUE" wird auch gleich der p-Wert eines Log-Rank-Tests darstellt.
+```{r fig.align = 'left'}
+ggsurvplot(fit1, data = ovarian, pval = TRUE)
+```
+
+Vertikale Linien zeigen zensierte Daten an, die entsprechenden X-Werte den Zeitpunkt, zu dem die Zensur erfolgte.
+
+Der logarithmische p-Wert von 0,3 zeigt ein nicht signifikantes Ergebnis an (zum 95% - Level). In dieser Studie war keine der untersuchten Behandlungen signifikant überlegen, obwohl es den Patienten, die die Behandlung B erhalten, im ersten Monat der Nachbeobachtung besser geht. 
+Was ist mit den anderen Variablen?
+```{r fig.align = 'left'}
+# Examine prdictive value of residual disease status
+fit2 <- survfit(surv_object ~ resid.ds, data = ovarian)
+ggsurvplot(fit2, data = ovarian, pval = TRUE)
+```
+
+Etwas anders sehen die nach Resterkrankungsstatus geschichteten Kaplan-Meier-Plots aus: Die Kurven weichen frühzeitig voneinander ab und der Log-Rank-Test ist fast signifikant. Man könnte argumentieren, dass eine Folgestudie mit einer erhöhten Stichprobengrösse diese Ergebnisse bestätigen könnte, d.h. dass Patienten mit positivem Resterkrankungsstatus eine deutlich schlechtere Prognose haben als Patienten ohne Resterkrankung.
+
+### Schätzung des x-Jahres-Überlebens
+Eine Grösse, die bei einer survival Analyse oft von Interesse ist, ist die Wahrscheinlichkeit, eine bestimmte Anzahl von Jahren zu überleben (x).
+
+Um beispielsweise die Wahrscheinlichkeit des Überlebens auf 1 Jahre zu schätzen, verwenden wir eine Zusammenfassung mit dem Argument times (aus Doku des Datensatzes ist die Einheit von "time" nicht ersichtlich. Möglicherweise Tage?):
+```{r}
+# Nullmodell, ohne Gruppenvergleich
+fit3 <- survfit(surv_object ~ 1, data = ovarian)
+summary(fit3, times = 365)
+```
+
+Die 1-jährige Überlebenswahrscheinlichkeit in dieser Studie beträgt 73% unabhängig der treatment Gruppe. Die zugehörigen unteren und oberen Grenzen des 95% Konfidenzintervalls werden ebenfalls angezeigt.
+```{r fig.align = 'left'}
+# Nullmodell, ohne Gruppenvergleich
+ggsurvplot(fit3, data = ovarian)
+```
+
+## Cox-Proportional-Hazards-Modelle
+Gibt es einen systematischeren Weg, die verschiedenen Kovariablen zu betrachten? Die Cox-Proportional-Hazards-Modelle erlauben es, Kovariablen einzubeziehen. Mit der "coxph" Funktion können Cox-Proportional-Gefahrenmodelle erstellt und mit "ggforest" visualisiert werden. Diese Art von Plot wird als **forestplot** bezeichnet. Es zeigt sogenannte Hazard Ratios (HR), die aus dem Modell für alle Kovariablen abgeleitet sind, die wir in die Formel in coxph aufgenommen haben. Kurz gesagt, ein HR > 1 zeigt ein erhöhtes Todesrisiko an (gemäss der Definition von h(t)), wenn eine bestimmte Bedingung von einem Patienten erfüllt wird. Ein HR < 1 hingegen deutet auf ein vermindertes Risiko hin. Betrachten wir die Ausgabe des Modells:
+```{r message = FALSE, warning=FALSE, fig.align = 'left'}
+# Fit a Cox proportional hazards model
+fit.coxph <- coxph(surv_object ~ rx + resid.ds + age_group + ecog.ps, 
+                   data = ovarian)
+ggforest(fit.coxph, data = ovarian)
+```
+
+Jede Hazard Ratio (HR) stellt ein relatives Todesrisiko dar, das eine Instanz eines binären Merkmals mit der anderen vergleicht. Eine Hazard Ratio von 0,25 für Behandlungsgruppen zeigt beispielsweise, dass Patienten, die die Behandlung B erhielten, ein geringeres Sterberisiko haben als Patienten, die die Behandlung A erhielten (die als Referenz zur Berechnung der Hazard Ratio diente). Wie der forestplot zeigt, beträgt das jeweilige 95% Konfidenzintervall 0,071 - 0,89 und dieses Ergebnis ist signifikant.
+
+Anhand dieses Modells ist ersichtlich, dass die Variablen Behandlungsgruppe, Resterkrankungsstatus und Altersgruppe das Todesrisiko der Patienten in dieser Studie signifikant beeinflussen. Diese Aussage ist ganz anders als das, was wir mit dem Kaplan-Meier-Schätzer und dem Log-Rank-Test gesehen haben. Während erstere die Überlebenswahrscheinlichkeit schätzt, berechnet letztere das Todesrisiko und die entsprechenden Gefahrenverhältnisse. Die Analyse zeigt, dass die Ergebnisse, die diese Methoden liefern, in Bezug auf die Bedeutung unterschiedlich sein können.
+
+### Quellen:
+- https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html
+- https://www.datacamp.com/community/tutorials/survival-analysis-R
+- http://www.sthda.com/english/wiki/cox-proportional-hazards-model
+
